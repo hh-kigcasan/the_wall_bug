@@ -43,6 +43,8 @@ Copy the SQL query bellow and run it to create the needed database for The Wall.
 **Once you have the database created**
 * *Make sure to fix the bug in the Registration form first to be able to create/register a new account.*
 * *Use that registered account to fix all the other bugs in The Wall to make all the other features usable.*
+
+#### A. If you're using MySQL version 8+, run the following:
 ```
 -- MySQL Workbench Forward Engineering
 
@@ -135,3 +137,82 @@ SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
 ```
+
+#### B. If you're using below MySQL version 8 (ex. 5.7.39), run the following:
+```
+-- MySQL Workbench Forward Engineering
+-- Disable unique checks and foreign key checks for the session
+SET
+    UNIQUE_CHECKS = 0;
+
+SET
+    FOREIGN_KEY_CHECKS = 0;
+
+SET
+    SQL_MODE = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema thewallv2
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `thewallv2` DEFAULT CHARACTER SET utf8;
+
+USE `thewallv2`;
+
+-- -----------------------------------------------------
+-- Table `thewallv2`.`users`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `thewallv2`.`users` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `first_name` VARCHAR(255) NULL DEFAULT NULL,
+    `last_name` VARCHAR(255) NULL DEFAULT NULL,
+    `email` VARCHAR(255) NULL DEFAULT NULL,
+    `password` VARCHAR(255) NULL DEFAULT NULL,
+    `created_at` DATETIME NULL DEFAULT NULL,
+    `updated_at` DATETIME NULL DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB AUTO_INCREMENT = 5 DEFAULT CHARACTER SET = utf8;
+
+-- -----------------------------------------------------
+-- Table `thewallv2`.`messages`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `thewallv2`.`messages` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `user_id` INT(11) NOT NULL,
+    `message` TEXT NULL DEFAULT NULL,
+    `created_at` DATETIME NULL DEFAULT NULL,
+    `updated_at` DATETIME NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    INDEX `fk_messages_users_idx` (`user_id` ASC),
+    CONSTRAINT `fk_messages_users` FOREIGN KEY (`user_id`) REFERENCES `thewallv2`.`users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE = InnoDB AUTO_INCREMENT = 7 DEFAULT CHARACTER SET = utf8;
+
+-- -----------------------------------------------------
+-- Table `thewallv2`.`comments`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `thewallv2`.`comments` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `user_id` INT(11) NOT NULL,
+    `message_id` INT(11) NOT NULL,
+    `comment` TEXT NULL DEFAULT NULL,
+    `created_at` DATETIME NULL DEFAULT NULL,
+    `updated_at` DATETIME NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE INDEX `created_at_UNIQUE` (`updated_at` ASC),
+    INDEX `fk_comments_messages1_idx` (`message_id` ASC),
+    INDEX `fk_comments_users1_idx` (`user_id` ASC),
+    CONSTRAINT `fk_comments_messages1` FOREIGN KEY (`message_id`) REFERENCES `thewallv2`.`messages` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT `fk_comments_users1` FOREIGN KEY (`user_id`) REFERENCES `thewallv2`.`users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE = InnoDB AUTO_INCREMENT = 8 DEFAULT CHARACTER SET = utf8;
+
+-- Re-enable unique checks and foreign key checks for the session
+SET
+    UNIQUE_CHECKS = 1;
+
+SET
+    FOREIGN_KEY_CHECKS = 1;
+
+```
+
+
+
+*-- Good luck! --*
